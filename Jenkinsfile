@@ -11,19 +11,11 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Install virtualenv
-                    sh 'pip install virtualenv'
-                    
-                    // Create and activate virtual environment
-                    sh '''
-                        virtualenv venv
-                        source venv/bin/activate
-                        pip install -r requirements.txt
-                    '''
-                    
+                    // Install dependencies
+                    sh 'pip install -r requirements.txt'
                     // Package the application into a tarball
                     sh """
-                        tar -czvf ${ARTIFACT_NAME} app.py requirements.txt
+                        tar -czvf ${env.ARTIFACT_NAME} app.py requirements.txt
                     """
                 }
             }
