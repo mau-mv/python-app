@@ -24,7 +24,9 @@ pipeline {
         stage('Deploy to Dev') {
             steps {
                 script {
-                    deployToServer(DEV_SERVER)
+                    sshagent(credentials: ['ssh-key-aws']){
+                        deployToServer(DEV_SERVER)
+                    }
                 }
             }
         }
@@ -39,6 +41,8 @@ pipeline {
 
 def deployToServer(server) {
     sh """
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${server.split('@')[1]} >> ~/.ssh/known_hosts
         scp -i ${SSH_KEY} ${ARTIFACT_NAME} ${server}:/tmp/
         ssh -i ${SSH_KEY} ${server} 'tar -xzvf /tmp/${ARTIFACT_NAME} -C /tmp/'
         ssh -i ${SSH_KEY} ${server} 'pip install -r /tmp/requirements.txt'
