@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         // Define environment variables if needed
-        DEV_SERVER = 'ec2-user@34.212.27.113'
-	SSH_KEY = credentials('ssh-key-aws')
+        DEV_SERVER = "ec2-user@34.212.27.113"
+	SSH_KEY = credentials("ssh-key-aws")
         ARTIFACT_NAME = 'python-app.tar.gz'
     }
 
