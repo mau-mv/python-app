@@ -40,10 +40,10 @@ pipeline {
 
 def deployToServer(server) {
     sh """
-        scp -i ${env.SSH_KEY} ${env.ARTIFACT_NAME} ${server}:/tmp/
-        ssh -i ${env.SSH_KEY} ${server} 'tar -xzvf /tmp/${env.ARTIFACT_NAME} -C /tmp/'
-        ssh -i ${env.SSH_KEY} ${server} 'pip install -r /tmp/requirements.txt'
-        ssh -i ${env.SSH_KEY} ${server} 'nohup python /tmp/app.py &'
+        scp -i $env.SSH_KEY ${env.ARTIFACT_NAME} ${server}:/tmp/
+        ssh -i $env.SSH_KEY ${server} 'tar -xzvf /tmp/${env.ARTIFACT_NAME} -C /tmp/'
+        ssh -i $env.SSH_KEY ${server} 'pip install -r /tmp/requirements.txt'
+        ssh -i $env.SSH_KEY ${server} 'nohup python /tmp/app.py &'
     """
 }
 
