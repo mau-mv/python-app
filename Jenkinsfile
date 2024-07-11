@@ -46,7 +46,7 @@ def deployToServer(server) {
         scp -i ${SSH_KEY} ${ARTIFACT_NAME} ${server}:/tmp/
         ssh -i ${SSH_KEY} ${server} 'tar -xzvf /tmp/${ARTIFACT_NAME} -C /tmp/'
         ssh -i ${SSH_KEY} ${server} 'pip install -r /tmp/requirements.txt'
-        ssh -i ${SSH_KEY} ${server} 'nohup python /tmp/app.py &'
+        ssh -i ${SSH_KEY} ${server} 'nohup python3 /tmp/app.py &'
     """
 }
 
