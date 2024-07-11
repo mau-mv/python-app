@@ -24,7 +24,7 @@ pipeline {
         stage('Deploy to Dev') {
             steps {
                 script {
-                    sshagent(credentials: [${SSH_KEY}]){
+                    sshagent(credentials: ['ssh-key-aws']){
                         deployToServer(DEV_SERVER)
                     }
                 }
