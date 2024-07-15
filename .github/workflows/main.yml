@@ -1,0 +1,62 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Package application
+      run: |
+        tar -czvf python-app.tar.gz app.py requirements.txt
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: python-app
+        path: python-app.tar.gz
+
+  deploy-dev:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: python-app
+        path: .
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Copy to Dev server
+      env:
+        DEV_SERVER: ${{ secrets.DEV_SERVER }}
+      run: |
+        ssh-keyscan -H ${DEV_SERVER#*@} >> ~/.ssh/known_hosts
+        scp python-app.tar.gz $DEV_SERVER:/tmp/
+        ssh $DEV_SERVER 'tar -xzvf /tmp/python-app.tar.gz -C /tmp/'
+        ssh $DEV_SERVER 'python3 -m venv /tmp/venv'
+        ssh $DEV_SERVER '/tmp/venv/bin/pip install -r /tmp/requirements.txt'
+        ssh $DEV_SERVER 'nohup /tmp/venv/bin/python /tmp/app.py > /tmp/app.log 2>&1 &'
+
