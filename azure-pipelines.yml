@@ -41,13 +41,14 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               artifactName: 'python-app'
+              targetPath: '$(Pipeline.Workspace)/python-app'
 
           - script: |
               mkdir -p ~/.ssh
               echo "$SSH_PRIVATE_KEY" | tr '_' '\n' > ~/.ssh/id_rsa
               chmod 600 ~/.ssh/id_rsa
               ssh-keyscan -H ${DEV_SERVER#*@} >> ~/.ssh/known_hosts
-              scp -i ~/.ssh/id_rsa python-app.tar.gz $DEV_SERVER:/tmp/
+              scp -i ~/.ssh/id_rsa $(Pipeline.Workspace)/python-app/python-app.tar.gz $DEV_SERVER:/tmp/
               ssh -i ~/.ssh/id_rsa $DEV_SERVER 'tar -xzvf /tmp/python-app.tar.gz -C /tmp/'
               ssh -i ~/.ssh/id_rsa $DEV_SERVER 'python3 -m venv /tmp/venv'
               ssh -i ~/.ssh/id_rsa $DEV_SERVER '/tmp/venv/bin/pip install -r /tmp/requirements.txt'
