@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DEV_SERVER = "ec2-user@35.86.80.247"
+        DEV_SERVER = "ec2-user@35.94.63.29"
         SSH_KEY = credentials("ssh-key-aws")
         ARTIFACT_NAME = 'python-app.tar.gz'
     }
