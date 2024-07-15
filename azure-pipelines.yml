@@ -44,7 +44,7 @@ stages:
 
           - script: |
               mkdir -p ~/.ssh
-              echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+              echo "$SSH_PRIVATE_KEY" | tr '_' '\n' > ~/.ssh/id_rsa
               chmod 600 ~/.ssh/id_rsa
               ssh-keyscan -H ${DEV_SERVER#*@} >> ~/.ssh/known_hosts
               scp -i ~/.ssh/id_rsa python-app.tar.gz $DEV_SERVER:/tmp/
