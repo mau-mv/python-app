@@ -41,7 +41,6 @@ pipeline {
 
 def deployToServer(server) {
     sh """
-        apt-get install npm -y
         mkdir -p ~/.ssh
         ssh-keyscan -H ${server.split('@')[1]} >> ~/.ssh/known_hosts
         scp -i ${SSH_KEY} ${ARTIFACT_NAME} ${server}:/tmp/
