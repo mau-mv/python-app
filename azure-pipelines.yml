@@ -1,0 +1,58 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+        addToPath: true
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: 'Install dependencies'
+
+    - script: |
+        tar -czvf python-app.tar.gz app.py requirements.txt
+      displayName: 'Package application'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'python-app.tar.gz'
+        artifactName: 'python-app'
+        publishLocation: 'Container'
+
+- stage: DeployDev
+  dependsOn: Build
+  jobs:
+  - deployment: DeployDev
+    environment: 'Dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: 'python-app'
+
+          - script: |
+              echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+              chmod 600 ~/.ssh/id_rsa
+              ssh-keyscan -H ${DEV_SERVER#*@} >> ~/.ssh/known_hosts
+              scp -i ~/.ssh/id_rsa python-app.tar.gz $DEV_SERVER:/tmp/
+              ssh -i ~/.ssh/id_rsa $DEV_SERVER 'tar -xzvf /tmp/python-app.tar.gz -C /tmp/'
+              ssh -i ~/.ssh/id_rsa $DEV_SERVER 'python3 -m venv /tmp/venv'
+              ssh -i ~/.ssh/id_rsa $DEV_SERVER '/tmp/venv/bin/pip install -r /tmp/requirements.txt'
+              ssh -i ~/.ssh/id_rsa $DEV_SERVER 'nohup /tmp/venv/bin/python /tmp/app.py > /tmp/app.log 2>&1 &'
+            displayName: 'Deploy to Dev'
+            env:
+              SSH_PRIVATE_KEY: $(SSH_PRIVATE_KEY)
+              DEV_SERVER: $(DEV_SERVER)
+
